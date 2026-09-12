@@ -176,6 +176,42 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
     }
   }
 
+  // Import .abp backup file
+  Future<void> _importBackup() async {
+    final loc = AppLocalizations.of(context);
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['abp', 'zip'],
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      if (file.path == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(loc.tr('import_error')),
+            backgroundColor: Colors.orange[600],
+          ));
+        }
+        return;
+      }
+
+      // Navigate to import preview screen
+      if (mounted) {
+        context.push('/import-preview', extra: file.path!);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(loc.tr('import_error')),
+          backgroundColor: Colors.red[600],
+        ));
+      }
+    }
+  }
+
   Future<void> _showAddDialog({String? barcode}) async {
     _editingProduct = null;
     _barcode = barcode;
@@ -301,10 +337,16 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                 if (v == 'export') _exportCSV();
                 if (v == 'import') _importCSV();
                 if (v == 'scan') _startScanner();
+                if (v == 'export_backup') context.push('/export-settings');
+                if (v == 'import_backup') _importBackup();
               },
               itemBuilder: (_) => [
                 PopupMenuItem(value: 'export', child: Text(loc.tr('export_csv'))),
                 PopupMenuItem(value: 'import', child: Text(loc.tr('import_csv'))),
+                const PopupMenuDivider(),
+                PopupMenuItem(value: 'export_backup', child: Text(loc.tr('export_backup'))),
+                PopupMenuItem(value: 'import_backup', child: Text(loc.tr('import_backup'))),
+                const PopupMenuDivider(),
                 PopupMenuItem(value: 'scan', child: Text(loc.tr('add_product_by_scan'))),
               ],
             ),

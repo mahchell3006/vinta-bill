@@ -380,6 +380,13 @@ class DatabaseService {
     }
   }
 
+  // ==================== PATH ====================
+
+  Future<String> getDatabasePath() async {
+    final dbPath = await getDatabasesPath();
+    return join(dbPath, 'algerian_billing.db');
+  }
+
   // ==================== IMPORT/EXPORT ====================
 
   Future<List<Map<String, dynamic>>> exportProductsAsMaps() async {

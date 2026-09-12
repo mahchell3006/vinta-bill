@@ -6,6 +6,8 @@ import '../views/screens/checkout_screen.dart';
 import '../views/screens/settings_screen.dart';
 import '../views/screens/invoices_screen.dart';
 import '../views/screens/credit_clients_screen.dart';
+import '../views/screens/import_preview_screen.dart';
+import '../views/screens/export_settings_screen.dart';
 
 final goRouter = GoRouter(
   initialLocation: '/',
@@ -37,6 +39,17 @@ final goRouter = GoRouter(
     GoRoute(
       path: '/credit-clients',
       builder: (context, state) => const CreditClientsScreen(),
+    ),
+    GoRoute(
+      path: '/import-preview',
+      builder: (context, state) {
+        final filePath = state.extra as String;
+        return ImportPreviewScreen(backupFilePath: filePath);
+      },
+    ),
+    GoRoute(
+      path: '/export-settings',
+      builder: (context, state) => const ExportSettingsScreen(),
     ),
   ],
 );
