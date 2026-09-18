@@ -8,6 +8,8 @@ import '../views/screens/invoices_screen.dart';
 import '../views/screens/credit_clients_screen.dart';
 import '../views/screens/import_preview_screen.dart';
 import '../views/screens/export_settings_screen.dart';
+import '../views/screens/bulk_order_screen.dart';
+import '../views/screens/sync_screen.dart';
 
 final goRouter = GoRouter(
   initialLocation: '/',
@@ -50,6 +52,14 @@ final goRouter = GoRouter(
     GoRoute(
       path: '/export-settings',
       builder: (context, state) => const ExportSettingsScreen(),
+    ),
+    GoRoute(
+      path: '/bulk-order',
+      builder: (context, state) => const BulkOrderScreen(),
+    ),
+    GoRoute(
+      path: '/sync',
+      builder: (context, state) => const SyncScreen(),
     ),
   ],
 );

@@ -230,72 +230,123 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
     final priceCtrl = TextEditingController(text: _editingProduct?.price.toString() ?? '');
     final stockCtrl = TextEditingController(text: _editingProduct?.stock.toString() ?? '');
     final codeCtrl = TextEditingController(text: _barcode ?? _editingProduct?.barcode ?? '');
+    final unitNameCtrl = TextEditingController(text: _editingProduct?.wholesaleUnitName ?? '');
+    final convFactorCtrl = TextEditingController(text: (_editingProduct?.conversionFactor ?? 1).toString());
+    final wholesaleCostCtrl = TextEditingController(text: _editingProduct?.wholesaleCostPrice.toString() ?? '');
+    bool isBulk = _editingProduct?.isBulkConvertible ?? false;
     final formKey = GlobalKey<FormState>();
     final isEdit = _editingProduct != null;
 
     final result = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: Text(isEdit ? loc.tr('edit_product') : loc.tr('add_product')),
-        content: Form(
-          key: formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: nameCtrl,
-                  decoration: InputDecoration(labelText: loc.tr('product_name')),
-                  textCapitalization: TextCapitalization.sentences,
-                  validator: (v) => v == null || v.trim().isEmpty ? loc.tr('name_required') : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: priceCtrl,
-                  decoration: InputDecoration(labelText: loc.tr('product_price'), suffixText: loc.tr('currency')),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.,]'))],
-                  validator: (v) => v == null || v.trim().isEmpty ? loc.tr('price_required') : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: stockCtrl,
-                  decoration: InputDecoration(labelText: loc.tr('stock')),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  validator: (v) => v == null || v.trim().isEmpty ? loc.tr('stock_required') : null,
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: codeCtrl,
-                        decoration: InputDecoration(labelText: loc.tr('product_barcode')),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        enabled: !isEdit,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text(isEdit ? loc.tr('edit_product') : loc.tr('add_product')),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: nameCtrl,
+                    decoration: InputDecoration(labelText: loc.tr('product_name')),
+                    textCapitalization: TextCapitalization.sentences,
+                    validator: (v) => v == null || v.trim().isEmpty ? loc.tr('name_required') : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: priceCtrl,
+                    decoration: InputDecoration(labelText: loc.tr('product_price'), suffixText: loc.tr('currency')),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.,]'))],
+                    validator: (v) => v == null || v.trim().isEmpty ? loc.tr('price_required') : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: stockCtrl,
+                    decoration: InputDecoration(labelText: loc.tr('stock')),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    validator: (v) => v == null || v.trim().isEmpty ? loc.tr('stock_required') : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: codeCtrl,
+                          decoration: InputDecoration(labelText: loc.tr('product_barcode')),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          enabled: !isEdit,
+                        ),
                       ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: () { Navigator.pop(ctx); _startScanner(); },
+                        icon: const Icon(Icons.qr_code_scanner),
+                      ),
+                    ],
+                  ),
+
+                  // Wholesale section
+                  const SizedBox(height: 16),
+                  const Divider(),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(loc.tr('configure_bulk'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                    value: isBulk,
+                    onChanged: (v) => setDialogState(() => isBulk = v),
+                  ),
+                  if (isBulk) ...[
+                    TextFormField(
+                      controller: unitNameCtrl,
+                      decoration: InputDecoration(
+                        labelText: loc.tr('wholesale_unit'),
+                        hintText: 'Plateau, Fardeau, Sac...',
+                      ),
+                      textCapitalization: TextCapitalization.sentences,
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      onPressed: () { Navigator.pop(ctx); _startScanner(); },
-                      icon: const Icon(Icons.qr_code_scanner),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: convFactorCtrl,
+                            decoration: InputDecoration(labelText: loc.tr('conversion_factor')),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: wholesaleCostCtrl,
+                            decoration: InputDecoration(
+                              labelText: loc.tr('wholesale_cost'),
+                              suffixText: loc.tr('currency'),
+                            ),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.,]'))],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.tr('cancel'))),
+            ElevatedButton(
+              onPressed: () { if (formKey.currentState!.validate()) Navigator.pop(ctx, true); },
+              child: Text(isEdit ? loc.tr('save') : loc.tr('add')),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(loc.tr('cancel'))),
-          ElevatedButton(
-            onPressed: () { if (formKey.currentState!.validate()) Navigator.pop(ctx, true); },
-            child: Text(isEdit ? loc.tr('save') : loc.tr('add')),
-          ),
-        ],
       ),
     );
 
@@ -304,15 +355,25 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
       final price = double.tryParse(priceCtrl.text.replaceAll(',', '.')) ?? 0;
       final stock = int.tryParse(stockCtrl.text) ?? 0;
       final barcode = codeCtrl.text.trim();
+      final unitName = unitNameCtrl.text.trim();
+      final convFactor = int.tryParse(convFactorCtrl.text) ?? 1;
+      final wholesaleCost = double.tryParse(wholesaleCostCtrl.text.replaceAll(',', '.')) ?? 0;
 
       if (isEdit && _editingProduct != null) {
         final updated = Product(
           id: _editingProduct!.id, name: name, price: price,
           barcode: barcode, stock: stock, tvaRate: _editingProduct!.tvaRate,
+          isBulkConvertible: isBulk, wholesaleUnitName: unitName,
+          conversionFactor: convFactor, wholesaleCostPrice: wholesaleCost,
+          costPrice: _editingProduct!.costPrice,
         );
         await DatabaseService.instance.updateProduct(updated);
       } else {
-        final product = Product(name: name, price: price, barcode: barcode, stock: stock);
+        final product = Product(
+          name: name, price: price, barcode: barcode, stock: stock,
+          isBulkConvertible: isBulk, wholesaleUnitName: unitName,
+          conversionFactor: convFactor, wholesaleCostPrice: wholesaleCost,
+        );
         await DatabaseService.instance.insertProduct(product);
       }
       await _loadProducts();
@@ -428,6 +489,24 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
     final isOut = product.stock == 0;
     final stockColor = isOut ? Colors.red : isLow ? Colors.orange : Colors.green;
 
+    // Dual-unit display using packs field
+    String? bulkLine;
+    if (product.packs > 0 && product.conversionFactor > 1) {
+      final looseUnits = product.stock - (product.packs * product.conversionFactor);
+      final unitName = product.wholesaleUnitName.isNotEmpty
+          ? product.wholesaleUnitName
+          : loc.tr('packs_short');
+      bulkLine = '${product.packs} $unitName · $looseUnits ${loc.tr('loose_units')} · '
+          '${product.stock} ${loc.tr('total_units')}';
+    } else if (product.isBulkConvertible && product.conversionFactor > 1) {
+      // Legacy fallback: product-level wholesale config
+      final bulkCount = product.stock ~/ product.conversionFactor;
+      bulkLine = loc.tr('bulk_stock_line')
+          .replaceAll('{bulk}', '$bulkCount')
+          .replaceAll('{unit}', product.wholesaleUnitName)
+          .replaceAll('{retail}', '${product.stock}');
+    }
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
@@ -436,13 +515,23 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
           child: Icon(Icons.inventory_2_outlined, color: Theme.of(context).colorScheme.primary, size: 20),
         ),
         title: Text(product.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Row(
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${product.price.toStringAsFixed(0)} ${loc.tr('currency')}', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-            if (product.barcode.isNotEmpty) ...[
-              const SizedBox(width: 8),
-              Text(product.barcode, style: TextStyle(color: Colors.grey[400], fontSize: 11)),
-            ],
+            Row(
+              children: [
+                Text('${product.price.toStringAsFixed(0)} ${loc.tr('currency')}', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                if (product.barcode.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Text(product.barcode, style: TextStyle(color: Colors.grey[400], fontSize: 11)),
+                ],
+              ],
+            ),
+            if (bulkLine != null)
+              Text(bulkLine,
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontSize: 12, fontWeight: FontWeight.w700)),
           ],
         ),
         trailing: Row(

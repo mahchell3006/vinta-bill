@@ -7,6 +7,12 @@ class Product {
   final int? categoryId;
   final String barcode;
   final double tvaRate;
+  final bool isBulkConvertible;
+  final String wholesaleUnitName;
+  final int conversionFactor;
+  final double wholesaleCostPrice;
+  final double costPrice;
+  final int packs;
 
   const Product({
     this.id,
@@ -17,6 +23,12 @@ class Product {
     this.categoryId,
     this.barcode = '',
     this.tvaRate = 0.0,
+    this.isBulkConvertible = false,
+    this.wholesaleUnitName = '',
+    this.conversionFactor = 1,
+    this.wholesaleCostPrice = 0.0,
+    this.costPrice = 0.0,
+    this.packs = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -29,6 +41,12 @@ class Product {
       'categoryId': categoryId,
       'barcode': barcode,
       'tvaRate': tvaRate,
+      'is_bulk_convertible': isBulkConvertible ? 1 : 0,
+      'wholesale_unit_name': wholesaleUnitName,
+      'conversion_factor': conversionFactor,
+      'wholesale_cost_price': wholesaleCostPrice,
+      'cost_price': costPrice,
+      'packs': packs,
     };
   }
 
@@ -42,6 +60,12 @@ class Product {
       categoryId: map['categoryId'] as int?,
       barcode: map['barcode'] as String? ?? '',
       tvaRate: (map['tvaRate'] as num?)?.toDouble() ?? 0.0,
+      isBulkConvertible: (map['is_bulk_convertible'] as int? ?? 0) == 1,
+      wholesaleUnitName: map['wholesale_unit_name'] as String? ?? '',
+      conversionFactor: map['conversion_factor'] as int? ?? 1,
+      wholesaleCostPrice: (map['wholesale_cost_price'] as num?)?.toDouble() ?? 0.0,
+      costPrice: (map['cost_price'] as num?)?.toDouble() ?? 0.0,
+      packs: map['packs'] as int? ?? 0,
     );
   }
 
@@ -54,6 +78,12 @@ class Product {
     int? categoryId,
     String? barcode,
     double? tvaRate,
+    bool? isBulkConvertible,
+    String? wholesaleUnitName,
+    int? conversionFactor,
+    double? wholesaleCostPrice,
+    double? costPrice,
+    int? packs,
   }) {
     return Product(
       id: id ?? this.id,
@@ -64,6 +94,12 @@ class Product {
       categoryId: categoryId ?? this.categoryId,
       barcode: barcode ?? this.barcode,
       tvaRate: tvaRate ?? this.tvaRate,
+      isBulkConvertible: isBulkConvertible ?? this.isBulkConvertible,
+      wholesaleUnitName: wholesaleUnitName ?? this.wholesaleUnitName,
+      conversionFactor: conversionFactor ?? this.conversionFactor,
+      wholesaleCostPrice: wholesaleCostPrice ?? this.wholesaleCostPrice,
+      costPrice: costPrice ?? this.costPrice,
+      packs: packs ?? this.packs,
     );
   }
 

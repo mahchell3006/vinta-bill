@@ -15,6 +15,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Map<String, dynamic> _dailySales = {'revenue': 0.0, 'transactionCount': 0, 'totalPieces': 0};
   List _lowStockProducts = [];
+  double _dailyCOGS = 0;
 
   @override
   void initState() {
@@ -25,10 +26,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Future<void> _loadData() async {
     final sales = await DatabaseService.instance.getDailySales();
     final lowStock = await DatabaseService.instance.getLowStockProducts();
+    final cogs = await DatabaseService.instance.getDailyCOGS();
     if (!mounted) return;
     setState(() {
       _dailySales = sales;
       _lowStockProducts = lowStock;
+      _dailyCOGS = cogs;
     });
   }
 
@@ -36,6 +39,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final revenue = _dailySales['revenue'] as double;
+    final netProfit = revenue - _dailyCOGS;
 
     return Scaffold(
       appBar: AppBar(
@@ -69,13 +74,63 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     children: [
                       _statItem(loc.tr('sold_pieces'), '${_dailySales['totalPieces']}', Icons.shopping_bag),
                       const SizedBox(width: 16),
-                      _statItem(loc.tr('revenue'), '${(_dailySales['revenue'] as double).toStringAsFixed(0)} ${loc.tr('currency')}', Icons.attach_money),
+                      _statItem(loc.tr('revenue'), '${revenue.toStringAsFixed(0)} ${loc.tr('currency')}', Icons.attach_money),
                       const SizedBox(width: 16),
                       _statItem(loc.tr('transactions'), '${_dailySales['transactionCount']}', Icons.receipt),
                     ],
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 12),
+
+            // COGS + Net Profit row
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.orange[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.orange[200]!),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(loc.tr('cogs'), style: TextStyle(color: Colors.orange[700], fontSize: 11, fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 4),
+                        Text('${_dailyCOGS.toStringAsFixed(0)} ${loc.tr('currency')}',
+                            style: TextStyle(color: Colors.orange[800], fontWeight: FontWeight.w800, fontSize: 16)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: netProfit >= 0 ? Colors.green[50] : Colors.red[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: netProfit >= 0 ? Colors.green[200]! : Colors.red[200]!),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(loc.tr('net_profit'), style: TextStyle(
+                            color: netProfit >= 0 ? Colors.green[700] : Colors.red[700],
+                            fontSize: 11, fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 4),
+                        Text('${netProfit.toStringAsFixed(0)} ${loc.tr('currency')}',
+                            style: TextStyle(
+                                color: netProfit >= 0 ? Colors.green[800] : Colors.red[800],
+                                fontWeight: FontWeight.w800, fontSize: 16)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
 
@@ -107,9 +162,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             const SizedBox(height: 8),
             _navCard(loc.tr('inventory'), Icons.inventory_2_outlined, () => context.go('/inventory')),
             const SizedBox(height: 8),
+            _navCard(loc.tr('bulk_order'), Icons.local_shipping_outlined, () => context.go('/bulk-order')),
+            const SizedBox(height: 8),
             _navCard(loc.tr('credit_clients'), Icons.account_balance_wallet_outlined, () => context.go('/credit-clients')),
             const SizedBox(height: 8),
             _navCard(loc.tr('invoices'), Icons.receipt_long_outlined, () => context.go('/invoices')),
+            const SizedBox(height: 8),
+            _navCard(loc.tr('network_sync'), Icons.sync_alt, () => context.go('/sync')),
             const SizedBox(height: 8),
             _navCard(loc.tr('settings'), Icons.settings_outlined, () => context.go('/settings')),
             const SizedBox(height: 20),
