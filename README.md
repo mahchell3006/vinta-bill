@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🛒 Mobile POS & Billing App 
 
 A feature-rich, high-performance offline-first billing and Point of Sale (POS) application built with Flutter. Designed for seamless retail checkout operations featuring barcode scanning, thermal Bluetooth printing, and robust local data persistence.
@@ -99,3 +100,6 @@ As a senior-focused project, please adhere to:
 1. **Clean Architecture Rules**: Maintain strict boundaries between `domain`, `data`, and `presentation` layers.
 2. **Immutable States**: Emit only immutable states from BLoCs utilizing `equatable`.
 3. **No Direct Exceptions in Domain**: Utilize `fpdart`'s `Either<Failure, Type>` pattern to handle control flow for exceptions.
+=======
+# vinta-bill
+>>>>>>> 87fff6308305ec4090ad7b820ea8923123c1c148
